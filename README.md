@@ -37,6 +37,26 @@ conda create -y -p .vendor/AutoBio/.venv python=3.11 pip
 预期 MuJoCo 版本为 `3.3.0`。请勿把 `.vendor/AutoBio/.venv/bin/python` 先 `resolve()` 成
 基础解释器路径；这样会绕过 Conda 环境的 `site-packages`。
 
+### MuJoCo 运行环境
+
+`mujoco==3.3.0` 是本流程的 MuJoCo Python 运行时；它随上面的 pip 安装进入 Conda 环境，
+不需要再单独下载 MuJoCo 安装包。AutoBio 另有 `mjlab` 扩展插件，其动态库来自源码目录的
+`.vendor/AutoBio/autobio/libmjlab.so.3.3.0`，渲染命令会在加载 `pickup.xml` 前注册该插件。
+
+验证 MuJoCo 版本、插件文件与离屏渲染后端：
+
+```bash
+cd .
+
+.vendor/AutoBio/.venv/bin/python -c "import mujoco; print('MuJoCo', mujoco.__version__)"
+test -f .vendor/AutoBio/autobio/libmjlab.so.3.3.0
+export MUJOCO_GL=egl
+```
+
+无桌面 Linux 服务器使用 EGL；第 3 步也显式传入 `--gl egl`。这要求宿主机已有可用的 EGL
+实现和图形驱动（NVIDIA 驱动或 Mesa EGL）。如果该条件不满足，Python 包安装成功后仍可能在
+创建 `mujoco.Renderer` 时失败；可先让系统管理员配置 EGL 驱动，或改用 `--gl osmesa`。
+
 ## 2. 下载公开数据集
 
 官方公开的 Pickup MuJoCo 数据集是 `autobio-bench/pickup-mujoco`，格式为 LeRobot v2：
